@@ -99,7 +99,8 @@ class ImgCompression(object):
             Xrebuild = np.matmul((U_compressed * new_S_compressed), V_compressed)
 
         else:
-            Xrebuild = (U_compressed * S_compressed[np.newaxis]) @ V_compressed
+            #Xrebuild = (U_compressed * S_compressed[np.newaxis]) @ V_compressed
+            Xrebuild = (U_compressed * S_compressed) @ V_compressed
         #print(Xrebuild)
         
         

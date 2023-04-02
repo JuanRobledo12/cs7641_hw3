@@ -29,7 +29,19 @@ class PCA(object):
             self.S: (min(N,D), ) numpy array
             self.V: (min(N,D), D) numpy array
         """
-        raise NotImplementedError
+        #print(X)
+        #print(X.shape)
+        mean_X_features = np.mean(X, axis=0)
+        #print(mean_X_features)
+        center_X = X - mean_X_features
+        #print(center_X)
+        self.U, self.S, self.V = np.linalg.svd(center_X, full_matrices=False)
+        #print(self.U)
+        #print(self.S)
+        #print(self.V)
+
+
+        return
 
     def transform(self, data: np.ndarray, K: int = 2) -> np.ndarray:  # 2 pts
         """
@@ -45,8 +57,17 @@ class PCA(object):
 
         Hint: Make sure you remember to first center your data by subtracting the mean of each feature.
         """
-
-        raise NotImplementedError
+        
+        #print(data)
+        #print('U ---------\n', self.U)
+        #print('S ---------\n', self.S)
+        #print('V ---------\n', self.V)
+        mean_data_features = np.mean(data, axis=0)
+        center_data = data - mean_data_features
+        X_new = center_data @ np.transpose(self.V)
+        X_new = X_new[:,:K]
+        #print(X_new)
+        return X_new
 
     def transform_rv(
         self, data: np.ndarray, retained_variance: float = 0.99
@@ -67,7 +88,19 @@ class PCA(object):
         Hint: Make sure you remember to first center your data by subtracting the mean of each feature.
 
         """
-        raise NotImplementedError
+        #print(retained_variance)
+        mean_data_features = np.mean(data, axis=0)
+        center_data = data - mean_data_features
+
+        #print(self.S)
+        #print(self.S**2)
+        #print(np.cumsum(self.S**2))
+        exp_var = np.cumsum(self.S**2)/ np.sum(self.S**2)
+        #print(exp_var)
+        calc_k = np.where(exp_var == exp_var[exp_var >= retained_variance][0])[0][0] + 1
+        #print(calc_k)
+        X_new = center_data @ np.transpose(self.V)[:,:calc_k]
+        return X_new
 
     def get_V(self) -> np.ndarray:
         """ Getter function for value of V """
@@ -89,7 +122,17 @@ class PCA(object):
             
         Return: None
         """
-        raise NotImplementedError
+        self.fit(X)
+        X_transform = self.transform(X, K=2)
+        colors = ['blue', 'magenta', 'red']
+        labels = np.unique(y)
+        for label, color in zip(labels, colors):
+            plt.scatter(X_transform[y == label, 0], X_transform[y == label, 1], c=color, label=label, marker='x')
+        
+        plt.legend()
+        plt.show()
+
+        return
 
         ##################### END YOUR CODE ABOVE, DO NOT CHANGE BELOW #######################
         plt.legend()

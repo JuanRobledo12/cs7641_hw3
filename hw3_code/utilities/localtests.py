@@ -374,7 +374,7 @@ class TestPCA(unittest.TestCase):
 
         # transform data
         X_new = pca.transform(test_pca.data)
-
+        #print(test_pca.X_new)
         # check transformed data
         self.assertEqual(
             np.allclose(X_new, test_pca.X_new), True, "Transformed data is incorrect"
