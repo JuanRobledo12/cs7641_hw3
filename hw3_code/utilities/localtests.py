@@ -102,6 +102,7 @@ class TestImgCompression(unittest.TestCase):
         cr = ic.compression_ratio(test_ic.bw_image, 2)
 
         # check compression ratio
+        #print(test_ic.cr_g)
         self.assertEqual(
             np.allclose(cr, test_ic.cr_g), True, "Compression ratio is incorrect"
         )
@@ -121,6 +122,7 @@ class TestImgCompression(unittest.TestCase):
         rvp = ic.recovered_variance_proportion(test_ic.Sg, 2)
 
         # check recovered variance proportion
+        #print(test_ic.rvp_g)
         self.assertEqual(
             np.allclose(rvp, test_ic.rvp_g),
             True,
