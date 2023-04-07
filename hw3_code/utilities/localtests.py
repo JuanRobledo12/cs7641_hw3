@@ -422,7 +422,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print(test_reg.rmse)
         rmse_test = np.allclose(
             reg.rmse(test_reg.predict, test_reg.y_all), test_reg.rmse
         )
@@ -438,6 +438,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
+        #print(test_reg.construct_poly)
 
         poly_feat_test = np.allclose(
             reg.construct_polynomial_feats(test_reg.x_all, 2), test_reg.construct_poly
@@ -488,10 +489,11 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print('locastest solution: ', test_reg.linear_GD)
         linear_GD, linear_GD_loss = reg.linear_fit_GD(
             test_reg.x_all_feat, test_reg.y_all
         )
+        
         lgd_test = np.allclose(linear_GD, test_reg.linear_GD)
         lgd_loss_test = np.allclose(linear_GD_loss, test_reg.linear_GD_loss)
         self.assertTrue(lgd_test, "Weights are incorrect")
@@ -507,7 +509,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print(test_reg.linear_SGD)
         linear_SGD, linear_SGD_loss = reg.linear_fit_SGD(
             test_reg.x_all_feat, test_reg.y_all, 1
         )
@@ -526,7 +528,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print(test_reg.ridge_closed)
         ridge_closed_test = np.allclose(
             reg.ridge_fit_closed(test_reg.x_all_feat, test_reg.y_all, 10),
             test_reg.ridge_closed,
@@ -543,7 +545,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print('localtest solution: ', test_reg.ridge_GD)
         ridge_GD, ridge_GD_loss = reg.ridge_fit_GD(
             test_reg.x_all_feat, test_reg.y_all, 10, 5
         )
@@ -581,7 +583,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print('localtest solution: ', test_reg.cross_val)
         ridge_cv_test = np.allclose(
             reg.ridge_cross_validation(test_reg.x_all_feat, test_reg.y_all, 3),
             test_reg.cross_val,
