@@ -129,6 +129,8 @@ class PCA(object):
         for label, color in zip(labels, colors):
             plt.scatter(X_transform[y == label, 0], X_transform[y == label, 1], c=color, label=label, marker='x')
         
+        print('data before PCA', X.shape)
+        print('data shape with PCA', X_transform.shape)
         plt.legend()
         plt.show()
 
