@@ -685,7 +685,7 @@ class TestLogisticRegression(unittest.TestCase):
 
         lr = LogisticRegression()
         test_lr = LogisticRegression_Test()
-
+        #print(test_lr.predict_labels_result_slice)
         result = lr.predict_labels(test_lr.h_x)
         self.assertTrue(result.ndim == 2, "predict_labels incorrect: check shape")
         self.assertTrue(
@@ -745,7 +745,7 @@ class TestLogisticRegression(unittest.TestCase):
 
         lr = LogisticRegression()
         test_lr = LogisticRegression_Test()
-
+        #print(test_lr.accuracy_result)
         result = lr.accuracy(test_lr.y, test_lr.y_hat)
         self.assertAlmostEqual(result, test_lr.accuracy_result, "accuracy incorrect")
 
