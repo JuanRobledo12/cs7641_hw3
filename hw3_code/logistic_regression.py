@@ -14,7 +14,8 @@ class LogisticRegression(object):
         Return:
             (N, D) numpy array, whose values are transformed by sigmoid function to the range (0, 1)
         """
-        raise NotImplementedError
+        sigmoid_arr = 1 / ((1 + np.exp(-1*s)))
+        return sigmoid_arr
 
     def bias_augment(self, x: np.ndarray) -> np.ndarray: # [3pts]
         """Prepend a column of 1's to the x matrix
@@ -25,7 +26,10 @@ class LogisticRegression(object):
         Returns:
             x_aug: (np.ndarray): (N, D + 1) numpy array, N data points each with a column of 1s and D features
         """
-        raise NotImplementedError
+        bias_arg = np.ones((x.shape[0], 1))
+        x_aug = np.concatenate((bias_arg, x), axis=1)
+        return x_aug
+    
 
     def predict_probs(self, x_aug: np.ndarray, theta: np.ndarray) -> np.ndarray: # [5pts]
         """Given model weights theta and input data points x, calculate the logistic regression model's
@@ -39,7 +43,9 @@ class LogisticRegression(object):
             h_x (np.ndarray): (N, 1) numpy array, the predicted probabilities of each data point being the positive label
                 this result is h(x) = P(y = 1 | x)
         """
-        raise NotImplementedError
+        #print(theta)
+        h_x = self.sigmoid(x_aug @ theta)
+        return h_x
 
     def predict_labels(self, h_x: np.ndarray) -> np.ndarray: # [2pts]
         """Given model weights theta and input data points x, calculate the logistic regression model's
@@ -52,6 +58,14 @@ class LogisticRegression(object):
             y_hat (np.ndarray): (N, 1) numpy array, the predicted labels of each data point
                 0 for negative label, 1 for positive label
         """
+        #print(h_x)
+        y_hat = np.zeros_like(h_x)
+        y_hat[h_x >= 0.5] = 1
+        y_hat[h_x < 0.5] = 0
+        #print(y_hat)
+        return y_hat
+        
+        
         raise NotImplementedError
 
     def loss(self, y: np.ndarray, h_x: np.ndarray) -> float: # [3pts]
@@ -64,7 +78,10 @@ class LogisticRegression(object):
         Return:
             loss (float)
         """
-        raise NotImplementedError
+        loss_first_term = y * np.log(h_x)
+        loss_second_term = (1 - y) * np.log(1 - h_x)
+        loss = (-1/y.shape[0]) * np.sum(loss_first_term + loss_second_term)
+        return loss
 
     def gradient(self, x_aug: np.ndarray, y: np.ndarray, h_x: np.ndarray) -> np.ndarray: # [3pts]
         """
@@ -80,7 +97,8 @@ class LogisticRegression(object):
             grad (np.ndarray): (D + 1, 1) numpy array,
                 the gradient of the loss function with respect to the parameters theta.
         """
-        raise NotImplementedError
+        grad =  (1 / x_aug.shape[0]) * (np.transpose(x_aug)@(h_x - y))
+        return grad
 
     def accuracy(self, y: np.ndarray, y_hat: np.ndarray) -> float: # [2pts]
         """Calculate the accuracy of the predicted labels y_hat
@@ -92,7 +110,12 @@ class LogisticRegression(object):
         Return:
             accuracy of the given parameters theta on data x, y
         """
-        raise NotImplementedError
+        true_val = y == y_hat
+        true_val_count = true_val[true_val == True].size
+        #print(true_val)
+        #print(true_val_count)
+        accuracy = true_val_count / y.shape[0]
+        return accuracy
 
     def evaluate(
         self, x: np.ndarray, y: np.ndarray, theta: np.ndarray
@@ -110,8 +133,12 @@ class LogisticRegression(object):
         Returns:
             Tuple[float, float]: loss, accuracy
         """
-
-        raise NotImplementedError
+        x_aug = self.bias_augment(x)
+        h_x = self.predict_probs(x_aug, theta)
+        loss = self.loss(y,h_x)
+        y_hat = self.predict_labels(h_x)
+        accuracy = self.accuracy(y,y_hat)
+        return loss, accuracy
 
     def fit(
         self,
@@ -156,13 +183,22 @@ class LogisticRegression(object):
         ##########################
         ### START STUDENT CODE ###
         ##########################
+        theta = np.zeros((x_train.shape[1] + 1, 1))
+        x_train_aug = self.bias_augment(x_train)
 
-        raise NotImplementedError
+        for epoch in range(epochs):
+            h_x = self.predict_probs(x_train_aug, theta)
+            gradient = self.gradient(x_train_aug, y_train, h_x)
+            new_theta = theta - lr*gradient
+            theta = np.copy(new_theta)
+            if ((epoch % 100) == 0):
+                self.update_evaluation_lists(x_train,y_train, x_val, y_val, theta, epoch)
+        
+        return new_theta
 
         ########################
         ### END STUDENT CODE ###
         ########################
-        return theta
 
     def update_evaluation_lists(
         self,

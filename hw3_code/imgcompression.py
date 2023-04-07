@@ -25,8 +25,15 @@ class ImgCompression(object):
             S: (min(N,D), ) numpy array for black and white images / (3,min(N,D)) numpy array for color images
             V^T: (D,D) numpy array for black and white images / (3,D,D) numpy array for color images
         """
+        #print(X)
 
-        raise NotImplementedError
+        #Perfoming singular value decomposition in X to obatin U, S and V
+        U, S, V_t = np.linalg.svd(X, full_matrices=True)
+        #print('U: -------\n', U)
+        #print('S: -------\n', S)
+        #print('V_t: -------\n', V_t)
+
+        return U, S, V_t
 
     def compress(
         self, U: np.ndarray, S: np.ndarray, V: np.ndarray, k: int
@@ -45,8 +52,24 @@ class ImgCompression(object):
                 S_compressed: (k, ) numpy array for black and white images / (3, k) numpy array for color images
                 V_compressed: (k, D) numpy array for black and white images / (3, k, D) numpy array for color images
         """
-
-        raise NotImplementedError
+        #print('U: -------\n', U)
+        #print('S: -------\n', S)
+        #print('V_t: -------\n', V)
+        #print('k: -------\n', k)
+        if U.ndim == 3:
+            U_compressed = U[:, :, :k]
+            S_compressed = S[:, :k]
+            V_compressed = V[:, :k, :]
+        else:
+            U_compressed = U[:, :k]
+            S_compressed = S[:k]
+            V_compressed = V[:k, :]
+        
+        #print('U_compressed ---------\n', U_compressed)
+        #print('S_compressed ---------\n', S_compressed)
+        #print('V_compressed ---------\n', V_compressed)
+        
+        return U_compressed, S_compressed, V_compressed
 
     def rebuild_svd(
         self,
@@ -68,7 +91,21 @@ class ImgCompression(object):
         Hint: numpy.matmul may be helpful for reconstructing color images
         """
 
-        raise NotImplementedError
+        #print(U_compressed)
+        #print(S_compressed[np.newaxis])
+        #print(V_compressed)
+        if U_compressed.ndim == 3:
+            new_S_compressed = S_compressed[:, np.newaxis, :]
+            Xrebuild = np.matmul((U_compressed * new_S_compressed), V_compressed)
+
+        else:
+            #Xrebuild = (U_compressed * S_compressed[np.newaxis]) @ V_compressed
+            Xrebuild = (U_compressed * S_compressed) @ V_compressed
+        #print(Xrebuild)
+        
+        
+        
+        return Xrebuild
 
 
     def compression_ratio(self, X: np.ndarray, k: int) -> float:  # [4pts]
@@ -82,8 +119,19 @@ class ImgCompression(object):
         Return:
             compression_ratio: float of proportion of storage used by compressed image
         """
-
-        raise NotImplementedError
+        # Compression ratio = #Pixels(original image) / Compressed size
+        # #Pixels = N x D
+        # compressed size = N × k + k + k × D = k × (1 + N + D) 
+        #print(X.shape)
+        #print(X.size)
+        #print(k)
+        if X.ndim == 3:
+            compression_ratio = (k * (1 + X.shape[1] + X.shape[2])) / (X.shape[1] * X.shape[2])
+        else:
+            compression_ratio = (k * (1 + X.shape[0] + X.shape[1])) / X.size 
+        
+        #print(compression_ratio)
+        return compression_ratio
 
     def recovered_variance_proportion(self, S: np.ndarray, k: int) -> float:  # [4pts]
         """
@@ -96,8 +144,15 @@ class ImgCompression(object):
         Return:
            recovered_var: float (array of 3 floats for color image) corresponding to proportion of recovered variance
         """
+        #print(S)
+        #print(k)
+        if S.ndim == 2:
+            recovered_var = np.sum(np.square(S[:,:k]), axis=1) / np.sum(np.square(S), axis=1)
+        else:
+            recovered_var = np.sum(np.square(S[:k])) / np.sum(np.square(S))
 
-        raise NotImplementedError
+        #print(recovered_var)
+        return recovered_var
 
     def memory_savings(
         self, X: np.ndarray, U: np.ndarray, S: np.ndarray, V: np.ndarray, k: int

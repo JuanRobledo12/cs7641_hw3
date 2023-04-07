@@ -16,7 +16,9 @@ class Regression(object):
         Return:
             A float value
         """
-        raise NotImplementedError
+        rmse_val = np.sqrt(np.sum((label - pred)**2) / pred.size)
+        #print(rmse_val)
+        return rmse_val
 
     def construct_polynomial_feats(
         self, x: np.ndarray, degree: int
@@ -61,7 +63,27 @@ class Regression(object):
                 [ x_{3,1}^3  x_{3,2}^3]]]
 
         """
-        raise NotImplementedError
+        #print(x)
+        #print(degree)
+        degree_arr= np.arange(degree + 1)
+        #print(degree_arr)
+
+        if x.ndim > 1:
+            degree_arr= degree_arr.reshape(1,-1, 1) #-1 lets np decide what n dimensions to add in that axis
+            #print(degree_arr)
+            #Create a new dimension for each row in x, equivalent to x = x[:, np.newaxis, :]
+            x = np.expand_dims(x, axis=1)
+            #print(x)
+            feat = np.power(x, degree_arr)
+            #print(feat)
+        else:
+            x = x.reshape((x.shape[0], 1))
+            feat = x ** degree_arr
+            #print(feat)
+        
+
+        return feat
+    
 
     def predict(self, xtest: np.ndarray, weight: np.ndarray) -> np.ndarray:  # [5pts]
         """
@@ -75,7 +97,13 @@ class Regression(object):
         Return:
             prediction: (N,1) numpy array, the predicted labels
         """
-        raise NotImplementedError
+        #print(xtest)
+        #print(weight)
+
+        prediction = np.sum(xtest * np.transpose(weight), axis=1)
+        prediction = prediction.reshape((prediction.shape[0], 1))
+        #print(prediction)
+        return prediction
 
     # =================
     # LINEAR REGRESSION
@@ -95,7 +123,15 @@ class Regression(object):
         Hints:
             - For pseudo inverse, you can use numpy linear algebra function (np.linalg.pinv)
         """
-        raise NotImplementedError
+        
+        #Equation at slide 17 of Linear regression PPT
+        
+        #print(xtrain.shape)
+        #print(ytrain.shape)
+        weight = np.linalg.pinv(xtrain)@ytrain
+        #print(weight.shape)
+        
+        return weight
 
     def linear_fit_GD(
         self,
@@ -118,7 +154,19 @@ class Regression(object):
             weight: (D,1) numpy array, the weights of linear regression model
             loss_per_epoch: (epochs,) list of floats, rmse of each epoch
         """
-        raise NotImplementedError
+        weight = np.zeros((xtrain.shape[1], 1))
+        N = xtrain.shape[0]
+        loss_per_epoch = []
+
+        for epoch in range(epochs):
+
+            new_weight =  weight + (learning_rate/N)*(np.transpose(xtrain)@(ytrain-(xtrain@weight)))
+            ypred = self.predict(xtrain,new_weight)
+            loss_per_epoch.append(self.rmse(ypred, ytrain))
+            #print(new_weight)
+            weight = np.copy(new_weight)
+        
+        return weight, loss_per_epoch
 
     def linear_fit_SGD(
         self,
@@ -151,6 +199,29 @@ class Regression(object):
         weight for one datapoint at a time, but for each epoch, you'll
         need to go through all of the points.
         """
+        weight = np.zeros((xtrain.shape[1], 1))
+        N = xtrain.shape[0]
+        loss_per_epoch = []
+
+        #print('epochs', epochs)
+        #print('N', N)
+        for epoch in range(epochs):
+            for i in range(N):
+                x_i = xtrain[i].reshape((1,xtrain.shape[1]))
+                y_i = ytrain[i]
+                new_weight = weight + ((learning_rate)*(np.transpose(x_i)@(y_i - (x_i@weight))))
+                ypred = self.predict(xtrain,new_weight)
+                loss_per_epoch.append(self.rmse(ypred, ytrain))
+                weight = np.copy(new_weight)
+        
+        #print(weight)
+        #print(loss_per_epoch)
+
+        return weight, loss_per_epoch
+
+
+            
+        
         raise NotImplementedError
 
     # =================
@@ -173,8 +244,24 @@ class Regression(object):
             - For pseudo inverse, you can use numpy linear algebra function (np.linalg.pinv)
             - You should adjust your I matrix to handle the bias term differently than the rest of the terms
         """
-        raise NotImplementedError
+        #Equation at slide 27 of regularized regression PPT
+        
+        z_t_z = np.transpose(xtrain)@xtrain
+        #print(z_t_z)
+        lamda_identity_matrix = c_lambda * np.identity(n=z_t_z.shape[0])
+        #print(lamda_identity_matrix)
+        lamda_identity_matrix[0,:] = lamda_identity_matrix[0,:] * 0
+        #print(lamda_identity_matrix)
+        z_lambda = z_t_z + lamda_identity_matrix
+        #print(z_lambda)
 
+        z_lambda_inv = np.linalg.pinv(z_lambda)
+        
+        #print(z_lambda_inv)
+        reg_weight = z_lambda_inv @ (np.transpose(xtrain)@ytrain)
+        #print(reg_weight)
+        return reg_weight
+        
     def ridge_fit_GD(
         self,
         xtrain: np.ndarray,
@@ -200,7 +287,22 @@ class Regression(object):
             weight: (D,1) numpy array, the weights of linear regression model
             loss_per_epoch: (epochs,) list of floats, rmse of each epoch
         """
-        raise NotImplementedError
+        weight = np.zeros((xtrain.shape[1], 1))
+        N = xtrain.shape[0]
+        loss_per_epoch = []
+
+        for epoch in range(epochs):
+            
+            #ypred = self.predict(xtrain, weight)
+            gradient = ((-1 * np.transpose(xtrain)@(ytrain - xtrain@weight)) + c_lambda * weight) / N
+            weight =  weight - (learning_rate * gradient)
+            ypred = self.predict(xtrain, weight)
+            loss_per_epoch.append(self.rmse(ypred, ytrain))
+            
+        #print(weight)
+        
+        return weight, loss_per_epoch
+        
 
     def ridge_fit_SGD(
         self,
@@ -234,7 +336,27 @@ class Regression(object):
         weight for one datapoint at a time, but for each epoch, you'll
         need to go through all of the points.
         """
-        raise NotImplementedError
+        weight = np.zeros((xtrain.shape[1], 1))
+        N = xtrain.shape[0]
+        loss_per_epoch = []
+
+        #print('epochs', epochs)
+        #print('N', N)
+        for epoch in range(epochs):
+            for i in range(N):
+                x_i = xtrain[i].reshape((1,xtrain.shape[1]))
+                y_i = ytrain[i]
+                gradient =  np.transpose(-x_i*(y_i - (x_i @ weight))) + ((c_lambda * weight)/N)
+                #print(gradient)
+                weight =  weight - (learning_rate * gradient)
+                ypred = self.predict(xtrain, weight)
+                loss_per_epoch.append(self.rmse(ypred, ytrain))
+            
+        #print(weight)
+        #print(loss_per_epoch)
+
+        return weight, loss_per_epoch
+
 
     def ridge_cross_validation(
         self, X: np.ndarray, y: np.ndarray, kfold: int = 10, c_lambda: float = 100
@@ -258,7 +380,36 @@ class Regression(object):
                 split X and y into 10 equal-size folds
                 use 90 percent for training and 10 percent for test
         """
-        raise NotImplementedError
+        
+        #print(X.shape)
+        #print(kfold)
+        X_list = np.array_split(X, kfold, axis=0)
+        y_list = np.array_split(y, kfold, axis=0)
+        #print('Datapoints -----------\n', X_list)
+        loss_per_fold = []
+
+        for k in range(kfold):
+            #Create the kth test set
+            X_kfold_test = X_list[k]
+            y_kfold_test = y_list[k]
+
+            X_list_cp = X_list.copy()
+            y_list_cp = y_list.copy()
+
+            X_list_cp.pop(k)
+            y_list_cp.pop(k)
+            
+            #print('X_list_copy after pop', X_list_cp)
+            X_kfold_train = np.concatenate(X_list_cp, axis=0)
+            y_kfold_train = np.concatenate(y_list_cp, axis=0)
+
+            #print('train data ----------\n',X_kfold_train)
+            weight_arr = self.ridge_fit_closed(X_kfold_train, y_kfold_train, c_lambda)
+            y_predicted = self.predict(X_kfold_test, weight_arr)
+            rmse_loss = self.rmse(y_predicted, y_kfold_test)
+            loss_per_fold.append(rmse_loss)
+        #print(loss_per_fold)
+        return loss_per_fold
 
     def hyperparameter_search(
         self, X: np.ndarray, y: np.ndarray, lambda_list: List[float], kfold: int

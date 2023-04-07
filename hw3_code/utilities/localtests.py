@@ -102,6 +102,7 @@ class TestImgCompression(unittest.TestCase):
         cr = ic.compression_ratio(test_ic.bw_image, 2)
 
         # check compression ratio
+        #print(test_ic.cr_g)
         self.assertEqual(
             np.allclose(cr, test_ic.cr_g), True, "Compression ratio is incorrect"
         )
@@ -121,6 +122,7 @@ class TestImgCompression(unittest.TestCase):
         rvp = ic.recovered_variance_proportion(test_ic.Sg, 2)
 
         # check recovered variance proportion
+        #print(test_ic.rvp_g)
         self.assertEqual(
             np.allclose(rvp, test_ic.rvp_g),
             True,
@@ -372,7 +374,7 @@ class TestPCA(unittest.TestCase):
 
         # transform data
         X_new = pca.transform(test_pca.data)
-
+        #print(test_pca.X_new)
         # check transformed data
         self.assertEqual(
             np.allclose(X_new, test_pca.X_new), True, "Transformed data is incorrect"
@@ -420,7 +422,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print(test_reg.rmse)
         rmse_test = np.allclose(
             reg.rmse(test_reg.predict, test_reg.y_all), test_reg.rmse
         )
@@ -436,6 +438,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
+        #print(test_reg.construct_poly)
 
         poly_feat_test = np.allclose(
             reg.construct_polynomial_feats(test_reg.x_all, 2), test_reg.construct_poly
@@ -486,10 +489,11 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print('locastest solution: ', test_reg.linear_GD)
         linear_GD, linear_GD_loss = reg.linear_fit_GD(
             test_reg.x_all_feat, test_reg.y_all
         )
+        
         lgd_test = np.allclose(linear_GD, test_reg.linear_GD)
         lgd_loss_test = np.allclose(linear_GD_loss, test_reg.linear_GD_loss)
         self.assertTrue(lgd_test, "Weights are incorrect")
@@ -505,7 +509,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print(test_reg.linear_SGD)
         linear_SGD, linear_SGD_loss = reg.linear_fit_SGD(
             test_reg.x_all_feat, test_reg.y_all, 1
         )
@@ -524,7 +528,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print(test_reg.ridge_closed)
         ridge_closed_test = np.allclose(
             reg.ridge_fit_closed(test_reg.x_all_feat, test_reg.y_all, 10),
             test_reg.ridge_closed,
@@ -541,7 +545,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print('localtest solution: ', test_reg.ridge_GD)
         ridge_GD, ridge_GD_loss = reg.ridge_fit_GD(
             test_reg.x_all_feat, test_reg.y_all, 10, 5
         )
@@ -579,7 +583,7 @@ class TestRegression(unittest.TestCase):
 
         reg = Regression()
         test_reg = Regression_Test()
-
+        #print('localtest solution: ', test_reg.cross_val)
         ridge_cv_test = np.allclose(
             reg.ridge_cross_validation(test_reg.x_all_feat, test_reg.y_all, 3),
             test_reg.cross_val,
@@ -681,7 +685,7 @@ class TestLogisticRegression(unittest.TestCase):
 
         lr = LogisticRegression()
         test_lr = LogisticRegression_Test()
-
+        #print(test_lr.predict_labels_result_slice)
         result = lr.predict_labels(test_lr.h_x)
         self.assertTrue(result.ndim == 2, "predict_labels incorrect: check shape")
         self.assertTrue(
@@ -741,7 +745,7 @@ class TestLogisticRegression(unittest.TestCase):
 
         lr = LogisticRegression()
         test_lr = LogisticRegression_Test()
-
+        #print(test_lr.accuracy_result)
         result = lr.accuracy(test_lr.y, test_lr.y_hat)
         self.assertAlmostEqual(result, test_lr.accuracy_result, "accuracy incorrect")
 
